@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNAKE ARENA | High-Stakes Competition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0c1427;
+            --surface: #151f3a;
+            --surface-alt: #1c2a4a;
+            --primary: #00d8a7;
+            --primary-dark: #00b88c;
+            --secondary: #6c63ff;
+            --accent: #ff6b9d;
+            --text-main: #ffffff;
+            --text-dim: #8b9bb9;
+            --border: #253153;
+            --success: #00d8a7;
+            --warning: #ffa726;
+            --danger: #ff5252;
+            --player1: #00d8a7;
+            --player2: #6c63ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .main-header {
+            background: rgba(21, 31, 58, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 100;
+            height: 70px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-balance {
+            background: rgba(28, 42, 74, 0.7);
+            border-radius: 8px;
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .balance-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .balance-amount {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            font-size: 0.8rem;
+        }
+
+        /* Matchmaking */
+        .matchmaking-card {
+            background: var(--surface-alt);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .matchmaking-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--warning);
+        }
+
+        .status-dot.active {
+            background: var(--success);
+        }
+
+        .searching-time {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .players-waiting {
+            text-align: center;
+            padding: 1rem 0;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        .players-count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 0.5rem;
+        }
+
+        .action-button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 216, 167, 0.2);
+        }
+
+        .action-button.secondary {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+        }
+
+        .action-button.secondary:hover {
+            background: var(--surface);
+        }
+
+        /* Active Matches */
+        .match-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .match-item {
+            background: var(--surface-alt);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .match-item:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .match-item.active {
+            border-color: var(--primary);
+            background: rgba(0, 216, 167, 0.1);
+        }
+
+        .match-players {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .player-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .player-tag.player1::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--player1);
+            border-radius: 50%;
+        }
+
+        .player-tag.player2::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--player2);
+            border-radius: 50%;
+        }
+
+        .vs {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .match-pot {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+
+        .pot-label {
+            color: var(--text-dim);
+        }
+
+        .pot-amount {
+            font-weight: 600;
+            color: var(--warning);
+        }
+
+        /* Main Arena */
+        .arena-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .arena-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .match-info {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .arena-content {
+            display: flex;
+            flex: 1;
+            gap: 2rem;
+        }
+
+        /* Game Board */
+        .game-board-container {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .game-board {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .board-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .player-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .player-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .player1 .player-avatar {
+            background: linear-gradient(135deg, var(--player1), #00b88c);
+        }
+
+        .player2 .player-avatar {
+            background: linear-gradient(135deg, var(--player2), #5a52d4);
+        }
+
+        .player-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .player-status {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.online {
+            background: var(--success);
+        }
+
+        .status-dot.playing {
+            background: var(--primary);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .player1 .stat-value {
+            color: var(--player1);
+        }
+
+        .player2 .stat-value {
+            color: var(--player2);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(10, 15, 30, 0.5);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .canvas-container.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 216, 167, 0.1);
+        }
+
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+        }
+
+        .game-status {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(21, 31, 58, 0.9);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+
+        .status-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-subtext {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        /* Betting Panel */
+        .betting-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 350px;
+        }
+
+        .betting-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .odds-display {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .odds-card {
+            flex: 1;
+            background: var(--surface-alt);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .odds-card:hover {
+            border-color: var(--border);
+            transform: translateY(-3px);
+        }
+
+        .odds-card.selected {
+            border-color: var(--primary);
+            background: rgba(0, 216, 167, 0.1);
+        }
+
+        .odds-player {
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .odds-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .odds-card.player1 .odds-value {
+            color: var(--player1);
+        }
+
+        .odds-card.player2 .odds-value {
+            color: var(--player2);
+        }
+
+        .odds-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .bet-amount {
+            margin-bottom: 1.5rem;
+        }
+
+        .amount-label {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+        }
+
+        .amount-input {
+            width: 100%;
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .amount-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .quick-bets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .quick-bet {
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .quick-bet:hover {
+            background: var(--surface);
+            border-color: var(--primary);
+        }
+
+        .place-bet-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--player2));
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .place-bet-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(108, 99, 255, 0.2);
+        }
+
+        .place-bet-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .live-bets {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .bet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bet-item {
+            background: var(--surface-alt);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--border);
+        }
+
+        .bet-item.player1 {
+            border-left-color: var(--player1);
+        }
+
+        .bet-item.player2 {
+            border-left-color: var(--player2);
+        }
+
+        .bet-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bet-user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .bet-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bet-username {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .bet-on {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .bet-amount {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 20, 39, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .overlay-content {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .overlay-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .overlay-subtitle {
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .overlay-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .arena-content {
+                flex-direction: column;
+            }
+            
+            .betting-panel {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="logo-area">
+            <div class="logo">
+                <div class="logo-icon">S</div>
+                <div class="logo-text">SNAKE ARENA</div>
+            </div>
+            
+            <nav class="header-nav">
+                <a href="#" class="nav-link active">Arena</a>
+                <a href="#" class="nav-link">Matches</a>
+                <a href="#" class="nav-link">Leaderboard</a>
+                <a href="#" class="nav-link">How to Play</a>
+            </nav>
+        </div>
+        
+        <div class="user-area">
+            <div class="user-balance">
+                <span class="balance-label">Balance:</span>
+                <span class="balance-amount">$2,540</span>
+            </div>
+            <div class="user-avatar" id="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="section-title"><i class="fas fa-bolt"></i> Quick Match</h3>
+                <div class="matchmaking-card">
+                    <div class="matchmaking-status">
+                        <div class="status-indicator">
+                            <div class="status-dot active"></div>
+                            <span>Ready to Play</span>
+                        </div>
+                        <div class="searching-time" id="search-time">00:00</div>
+                    </div>
+                    
+                    <div class="players-waiting">
+                        <div>Players in Arena</div>
+                        <div class="players-count" id="players-count">247</div>
+                    </div>
+                    
+                    <button class="action-button" id="find-match-btn">
+                        <i class="fas fa-search"></i> Find Opponent
+                    </button>
+                    
+                    <button class="action-button secondary" id="create-match-btn">
+                        <i class="fas fa-plus"></i> Create Private Match
+                    </button>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="section-title"><i class="fas fa-trophy"></i> Active Matches</h3>
+                <div class="match-list" id="match-list">
+                    <!-- Active matches will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Arena -->
+        <div class="arena-container">
+            <div class="arena-header">
+                <div class="match-info">
+                    <div class="info-item">
+                        <div class="info-label">Match ID</div>
+                        <div class="info-value" id="match-id">#A7F9B2</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Total Pot</div>
+                        <div class="info-value" id="total-pot">$1,240</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Time Remaining</div>
+                        <div class="info-value" id="time-remaining">05:00</div>
+                    </div>
+                </div>
+                
+                <div class="match-controls">
+                    <button class="action-button secondary" id="leave-match-btn">
+                        <i class="fas fa-sign-out-alt"></i> Leave Match
+                    </button>
+                </div>
+            </div>
+            
+            <div class="arena-content">
+                <!-- Player 1 Board -->
+                <div class="game-board-container">
+                    <div class="game-board">
+                        <div class="board-header">
+                            <div class="player-card player1">
+                                <div class="player-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="player-details">
+                                    <div class="player-name" id="player1-name">You</div>
+                                    <div class="player-status">
+                                        <div class="status-dot online"></div>
+                                        <span>Online</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="player-stats">
+                                <div class="stat">
+                                    <div class="stat-value" id="player1-score">000</div>
+                                    <div class="stat-label">Score</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value" id="player1-length">3</div>
+                                    <div class="stat-label">Length</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value" id="player1-time">00:00</div>
+                                    <div class="stat-label">Time Alive</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="canvas-container" id="player1-container">
+                            <canvas id="game1" width="400" height="400"></canvas>
+                            
+                            <div class="game-status" id="player1-status">
+                                <div class="status-text">Waiting for opponent...</div>
+                                <div class="status-subtext">Game starts when both players are ready</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Controls Info -->
+                    <div class="betting-section">
+                        <div class="section-header">
+                            <h3>Your Controls</h3>
+                            <div class="player-tag player1">Player 1</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 8px;">Movement</div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 6px; width: 120px;">
+                                    <div></div>
+                                    <div class="key">W</div>
+                                    <div></div>
+                                    <div class="key">A</div>
+                                    <div class="key">S</div>
+                                    <div class="key">D</div>
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 8px;">Actions</div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div class="key" style="width: 60px;">SPACE</div>
+                                        <span style="font-size: 0.9rem;">Pause/Resume</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div class="key" style="width: 60px;">ESC</div>
+                                        <span style="font-size: 0.9rem;">Forfeit</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Betting Panel -->
+                <div class="betting-panel">
+                    <div class="betting-section">
+                        <div class="section-header">
+                            <h3>Place Your Bet</h3>
+                            <div style="font-size: 0.9rem; color: var(--text-dim)">Odds Update in Real-time</div>
+                        </div>
+                        
+                        <div class="odds-display">
+                            <div class="odds-card player1 selected" id="odds-player1">
+                                <div class="odds-player">Player 1</div>
+                                <div class="odds-value">1.85</div>
+                                <div class="odds-label">Win Probability: 54%</div>
+                            </div>
+                            <div class="odds-card player2" id="odds-player2">
+                                <div class="odds-player">Player 2</div>
+                                <div class="odds-value">2.10</div>
+                                <div class="odds-label">Win Probability: 46%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bet-amount">
+                            <div class="amount-label">Bet Amount</div>
+                            <input type="text" class="amount-input" id="bet-amount" value="100">
+                        </div>
+                        
+                        <div class="quick-bets">
+                            <div class="quick-bet" data-amount="50">$50</div>
+                            <div class="quick-bet" data-amount="100">$100</div>
+                            <div class="quick-bet" data-amount="250">$250</div>
+                            <div class="quick-bet" data-amount="500">$500</div>
+                            <div class="quick-bet" data-amount="1000">$1,000</div>
+                            <div class="quick-bet" data-amount="2000">$2,000</div>
+                        </div>
+                        
+                        <button class="place-bet-btn" id="place-bet-btn" disabled>
+                            <i class="fas fa-coins"></i> Place Bet on Player 1
+                        </button>
+                    </div>
+                    
+                    <div class="betting-section live-bets">
+                        <div class="section-header">
+                            <h3>Live Bets</h3>
+                            <div style="font-size: 0.9rem; color: var(--text-dim)" id="live-bets-count">12 bets</div>
+                        </div>
+                        
+                        <div class="bet-list" id="live-bets-list">
+                            <!-- Live bets will be populated here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Player 2 Board -->
+                <div class="game-board-container">
+                    <div class="game-board">
+                        <div class="board-header">
+                            <div class="player-card player2">
+                                <div class="player-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="player-details">
+                                    <div class="player-name" id="player2-name">Opponent</div>
+                                    <div class="player-status">
+                                        <div class="status-dot online"></div>
+                                        <span>Connecting...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="player-stats">
+                                <div class="stat">
+                                    <div class="stat-value" id="player2-score">000</div>
+                                    <div class="stat-label">Score</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value" id="player2-length">3</div>
+                                    <div class="stat-label">Length</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value" id="player2-time">00:00</div>
+                                    <div class="stat-label">Time Alive</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="canvas-container" id="player2-container">
+                            <canvas id="game2" width="400" height="400"></canvas>
+                            
+                            <div class="game-status" id="player2-status">
+                                <div class="status-text">Waiting for player...</div>
+                                <div class="status-subtext">Opponent will appear here</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Opponent Info -->
+                    <div class="betting-section">
+                        <div class="section-header">
+                            <h3>Opponent Info</h3>
+                            <div class="player-tag player2">Player 2</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-dim);">Win Rate:</span>
+                                <span style="font-weight: 600;" id="opponent-winrate">68%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-dim);">Matches Played:</span>
+                                <span style="font-weight: 600;" id="opponent-matches">142</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-dim);">Avg. Survival:</span>
+                                <span style="font-weight: 600;" id="opponent-avgtime">04:32</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-dim);">Total Winnings:</span>
+                                <span style="font-weight: 600; color: var(--success)" id="opponent-winnings">$12,450</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay" class="overlay" style="display: flex;">
+        <div class="overlay-content">
+            <h1 class="overlay-title">SNAKE ARENA</h1>
+            <p class="overlay-subtitle">High-stakes competitive snake battles. Bet on yourself or others. Last snake standing takes the pot.</p>
+            
+            <div style="margin: 2rem 0;">
+                <div style="display: flex; justify-content: space-around; margin-bottom: 1.5rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--primary)">2,540</div>
+                        <div style="font-size: 0.9rem; color: var(--text-dim)">Active Players</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--secondary)">$124,850</div>
+                        <div style="font-size: 0.9rem; color: var(--text-dim)">In Play Today</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overlay-buttons">
+                <button class="action-button" id="join-arena-btn">
+                    <i class="fas fa-play"></i> Enter Arena
+                </button>
+                <button class="action-button secondary" id="tutorial-btn">
+                    <i class="fas fa-question-circle"></i> How to Play
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Game configuration
+    const CELL_SIZE = 20;
+    const GRID_COUNT = 20;
+    const GAME_SPEED = 120;
+    const MATCH_DURATION = 300; // 5 minutes in seconds
+
+    // Initialize canvases
+    const canvas1 = document.getElementById('game1');
+    const canvas2 = document.getElementById('game2');
+    const ctx1 = canvas1.getContext('2d');
+    const ctx2 = canvas2.getContext('2d');
+    
+    canvas1.width = canvas1.height = 400;
+    canvas2.width = canvas2.height = 400;
+
+    // Game state
+    let gameRunning = false;
+    let gameLoop;
+    let matchTime = 0;
+    let matchTimer;
+    let timeRemaining = MATCH_DURATION;
+    
+    // Player 1 state (current user)
+    let snake1 = [
+        {x: 8, y: 10},
+        {x: 8, y: 11},
+        {x: 8, y: 12}
+    ];
+    let food1 = {x: 5, y: 5};
+    let direction1 = {x: 0, y: -1};
+    let nextDirection1 = {x: 0, y: -1};
+    let score1 = 0;
+    let isAlive1 = true;
+    let player1TimeAlive = 0;
+    let player1Timer;
+
+    // Player 2 state (opponent - simulated)
+    let snake2 = [
+        {x: 12, y: 10},
+        {x: 12, y: 11},
+        {x: 12, y: 12}
+    ];
+    let food2 = {x: 15, y: 5};
+    let direction2 = {x: 0, y: -1};
+    let nextDirection2 = {x: 0, y: -1};
+    let score2 = 0;
+    let isAlive2 = true;
+    let player2TimeAlive = 0;
+    let player2Timer;
+    
+    // Betting state
+    let selectedPlayer = 1;
+    let betAmount = 100;
+    let totalPot = 1240;
+    let liveBets = [
+        {user: "SnakeKing", amount: 500, player: 1},
+        {user: "VenomVIP", amount: 250, player: 2},
+        {user: "ScaleMaster", amount: 100, player: 1},
+        {user: "CobraBet", amount: 1000, player: 2},
+        {user: "SlitherPro", amount: 300, player: 1},
+        {user: "PythonPunter", amount: 150, player: 1},
+    ];
+    
+    // Match state
+    let matchStatus = "waiting"; // waiting, starting, active, finished
+    let opponentConnected = false;
+    let countdown = 5;
+
+    // UI Elements
+    const overlay = document.getElementById('overlay');
+    const player1Status = document.getElementById('player1-status');
+    const player2Status = document.getElementById('player2-status');
+    const player1Container = document.getElementById('player1-container');
+    const player2Container = document.getElementById('player2-container');
+    const joinArenaBtn = document.getElementById('join-arena-btn');
+    const findMatchBtn = document.getElementById('find-match-btn');
+    const createMatchBtn = document.getElementById('create-match-btn');
+    const leaveMatchBtn = document.getElementById('leave-match-btn');
+    const placeBetBtn = document.getElementById('place-bet-btn');
+    
+    // Player stats elements
+    const score1El = document.getElementById('player1-score');
+    const score2El = document.getElementById('player2-score');
+    const length1El = document.getElementById('player1-length');
+    const length2El = document.getElementById('player2-length');
+    const time1El = document.getElementById('player1-time');
+    const time2El = document.getElementById('player2-time');
+    
+    // Betting elements
+    const oddsPlayer1 = document.getElementById('odds-player1');
+    const oddsPlayer2 = document.getElementById('odds-player2');
+    const betAmountInput = document.getElementById('bet-amount');
+    const totalPotEl = document.getElementById('total-pot');
+    const matchIdEl = document.getElementById('match-id');
+    const timeRemainingEl = document.getElementById('time-remaining');
+    const liveBetsList = document.getElementById('live-bets-list');
+    const liveBetsCount = document.getElementById('live-bets-count');
+    
+    // Match list
+    const matchListEl = document.getElementById('match-list');
+    const playersCountEl = document.getElementById('players-count');
+    const searchTimeEl = document.getElementById('search-time');
+
+    // Initialize the platform
+    function initPlatform() {
+        updateLiveBets();
+        generateMatchList();
+        updatePlayersCount();
+        
+        // Event listeners for betting
+        oddsPlayer1.addEventListener('click', () => selectPlayer(1));
+        oddsPlayer2.addEventListener('click', () => selectPlayer(2));
+        
+        // Quick bet buttons
+        document.querySelectorAll('.quick-bet').forEach(button => {
+            button.addEventListener('click', function() {
+                const amount = parseInt(this.getAttribute('data-amount'));
+                betAmountInput.value = amount;
+                updateBetButton();
+            });
+        });
+        
+        // Bet amount input
+        betAmountInput.addEventListener('input', updateBetButton);
+        
+        // Place bet button
+        placeBetBtn.addEventListener('click', placeBet);
+        
+        // Join arena button
+        joinArenaBtn.addEventListener('click', () => {
+            overlay.style.display = 'none';
+            startMatchmaking();
+        });
+        
+        // Find match button
+        findMatchBtn.addEventListener('click', startMatchmaking);
+        
+        // Create match button
+        createMatchBtn.addEventListener('click', createPrivateMatch);
+        
+        // Leave match button
+        leaveMatchBtn.addEventListener('click', leaveMatch);
+        
+        // Initialize game canvases
+        drawBoard(ctx1, snake1, food1, '#00d8a7', '#00b88c');
+        drawBoard(ctx2, snake2, food2, '#6c63ff', '#5a52d4');
+    }
+
+    // Start matchmaking
+    function startMatchmaking() {
+        findMatchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+        findMatchBtn.disabled = true;
+        
+        let searchSeconds = 0;
+        const searchInterval = setInterval(() => {
+            searchSeconds++;
+            const minutes = Math.floor(searchSeconds / 60).toString().padStart(2, '0');
+            const seconds = (searchSeconds % 60).toString().padStart(2, '0');
+            searchTimeEl.textContent = `${minutes}:${seconds}`;
+            
+            // Simulate finding opponent after 3-7 seconds
+            if (searchSeconds >= 3 && Math.random() > 0.5) {
+                clearInterval(searchInterval);
+                findOpponent();
+            }
+        }, 1000);
+    }
+
+    // Simulate finding an opponent
+    function findOpponent() {
+        findMatchBtn.innerHTML = '<i class="fas fa-check"></i> Match Found!';
+        
+        // Update opponent info
+        const opponentNames = ["VenomVIP", "SnakeKing", "CobraBet", "PythonPro", "ScaleMaster", "SlitherGod"];
+        const randomName = opponentNames[Math.floor(Math.random() * opponentNames.length)];
+        document.getElementById('player2-name').textContent = randomName;
+        
+        document.querySelector('.player2 .player-status span').textContent = 'Connected';
+        document.querySelector('.player2 .status-dot').classList.add('playing');
+        
+        // Update opponent stats
+        document.getElementById('opponent-winrate').textContent = `${Math.floor(Math.random() * 30) + 50}%`;
+        document.getElementById('opponent-matches').textContent = Math.floor(Math.random() * 200) + 50;
+        document.getElementById('opponent-avgtime').textContent = `0${Math.floor(Math.random() * 5) + 2}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`;
+        document.getElementById('opponent-winnings').textContent = `$${(Math.floor(Math.random() * 20000) + 5000).toLocaleString()}`;
+        
+        opponentConnected = true;
+        startMatchCountdown();
+    }
+
+    // Start match countdown
+    function startMatchCountdown() {
+        matchStatus = "starting";
+        player1Status.innerHTML = '<div class="status-text">Match Starting...</div><div class="status-subtext">Get ready!</div>';
+        player2Status.innerHTML = '<div class="status-text">Match Starting...</div><div class="status-subtext">Get ready!</div>';
+        
+        player1Container.classList.add('active');
+        player2Container.classList.add('active');
+        
+        // Start countdown
+        countdown = 5;
+        const countdownInterval = setInterval(() => {
+            player1Status.innerHTML = `<div class="status-text">${countdown}</div><div class="status-subtext">Match starting in...</div>`;
+            player2Status.innerHTML = `<div class="status-text">${countdown}</div><div class="status-subtext">Match starting in...</div>`;
+            
+            countdown--;
+            
+            if (countdown < 0) {
+                clearInterval(countdownInterval);
+                startMatch();
+            }
+        }, 1000);
+    }
+
+    // Start the match
+    function startMatch() {
+        matchStatus = "active";
+        gameRunning = true;
+        
+        // Hide status messages
+        player1Status.style.display = 'none';
+        player2Status.style.display = 'none';
+        
+        // Enable betting
+        placeBetBtn.disabled = false;
+        
+        // Initialize game state
+        snake1 = [{x: 8, y: 10}, {x: 8, y: 11}, {x: 8, y: 12}];
+        snake2 = [{x: 12, y: 10}, {x: 12, y: 11}, {x: 12, y: 12}];
+        direction1 = {x: 0, y: -1};
+        direction2 = {x: 0, y: -1};
+        nextDirection1 = {x: 0, y: -1};
+        nextDirection2 = {x: 0, y: -1};
+        score1 = 0;
+        score2 = 0;
+        isAlive1 = true;
+        isAlive2 = true;
+        player1TimeAlive = 0;
+        player2TimeAlive = 0;
+        
+        spawnFood(1);
+        spawnFood(2);
+        
+        updateUI();
+        
+        // Generate random match ID
+        matchIdEl.textContent = `#${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        
+        // Start game loop
+        clearInterval(gameLoop);
+        gameLoop = setInterval(updateGame, GAME_SPEED);
+        
+        // Start match timer
+        timeRemaining = MATCH_DURATION;
+        clearInterval(matchTimer);
+        matchTimer = setInterval(() => {
+            timeRemaining--;
+            updateTimeDisplay();
+            
+            if (timeRemaining <= 0) {
+                endMatchByTime();
+            }
+        }, 1000);
+        
+        // Start player timers
+        clearInterval(player1Timer);
+        player1Timer = setInterval(() => {
+            if (isAlive1) player1TimeAlive++;
+            updatePlayerTimeDisplay();
+        }, 1000);
+        
+        clearInterval(player2Timer);
+        player2Timer = setInterval(() => {
+            if (isAlive2) player2TimeAlive++;
+            updatePlayerTimeDisplay();
+        }, 1000);
+    }
+
+    // Update game state
+    function updateGame() {
+        // Update player 1 if alive
+        if (isAlive1) {
+            direction1 = nextDirection1;
+            const head1 = { x: snake1[0].x + direction1.x, y: snake1[0].y + direction1.y };
+
+            // Check collision
+            if (head1.x < 0 || head1.x >= GRID_COUNT || head1.y < 0 || head1.y >= GRID_COUNT || 
+                snake1.some(part => part.x === head1.x && part.y === head1.y)) {
+                isAlive1 = false;
+                player1Container.classList.remove('active');
+                player1Status.style.display = 'block';
+                player1Status.innerHTML = '<div class="status-text" style="color: var(--danger)">ELIMINATED</div><div class="status-subtext">You crashed!</div>';
+                checkMatchEnd();
+            } else {
+                snake1.unshift(head1);
+
+                if (head1.x === food1.x && head1.y === food1.y) {
+                    score1 += 10;
+                    spawnFood(1);
+                } else {
+                    snake1.pop();
+                }
+            }
+        }
+
+        // Update player 2 (simulated AI opponent)
+        if (isAlive2) {
+            // AI for player 2 - smarter than random but not perfect
+            updateAI();
+            direction2 = nextDirection2;
+            const head2 = { x: snake2[0].x + direction2.x, y: snake2[0].y + direction2.y };
+
+            // Check collision
+            if (head2.x < 0 || head2.x >= GRID_COUNT || head2.y < 0 || head2.y >= GRID_COUNT || 
+                snake2.some(part => part.x === head2.x && part.y === head2.y)) {
+                isAlive2 = false;
+                player2Container.classList.remove('active');
+                player2Status.style.display = 'block';
+                player2Status.innerHTML = '<div class="status-text" style="color: var(--danger)">ELIMINATED</div><div class="status-subtext">Opponent crashed!</div>';
+                checkMatchEnd();
+            } else {
+                snake2.unshift(head2);
+
+                if (head2.x === food2.x && head2.y === food2.y) {
+                    score2 += 10;
+                    spawnFood(2);
+                } else {
+                    snake2.pop();
+                }
+            }
+        }
+
+        updateUI();
+        draw();
+    }
+
+    // Simple AI for opponent
+    function updateAI() {
+        const head = snake2[0];
+        
+        // Determine direction to food
+        const dx = food2.x - head.x;
+        const dy = food2.y - head.y;
+        
+        // Try to move towards food, but avoid immediate collisions
+        const possibleMoves = [];
+        
+        // Check each direction
+        const directions = [
+            {x: 0, y: -1, weight: 0},
+            {x: 1, y: 0, weight: 0},
+            {x: 0, y: 1, weight: 0},
+            {x: -1, y: 0, weight: 0}
+        ];
+        
+        // Weight directions based on food position
+        directions.forEach(dir => {
+            // Don't reverse direction
+            if (dir.x === -direction2.x && dir.y === -direction2.y) {
+                dir.weight -= 100;
+            }
+            
+            // Prefer moving towards food
+            if (Math.sign(dx) === Math.sign(dir.x) && dir.x !== 0) dir.weight += 20;
+            if (Math.sign(dy) === Math.sign(dir.y) && dir.y !== 0) dir.weight += 20;
+            
+            // Check for collisions
+            const newX = head.x + dir.x;
+            const newY = head.y + dir.y;
+            
+            // Wall collision
+            if (newX < 0 || newX >= GRID_COUNT || newY < 0 || newY >= GRID_COUNT) {
+                dir.weight -= 50;
+            }
+            
+            // Self collision
+            if (snake2.some(part => part.x === newX && part.y === newY)) {
+                dir.weight -= 50;
+            }
+            
+            // Add some randomness
+            dir.weight += Math.random() * 10;
+        });
+        
+        // Choose direction with highest weight
+        directions.sort((a, b) => b.weight - a.weight);
+        nextDirection2 = {x: directions[0].x, y: directions[0].y};
+    }
+
+    function spawnFood(player) {
+        if (player === 1) {
+            food1 = {
+                x: Math.floor(Math.random() * GRID_COUNT),
+                y: Math.floor(Math.random() * GRID_COUNT)
+            };
+            while (snake1.some(part => part.x === food1.x && part.y === food1.y)) {
+                food1 = {
+                    x: Math.floor(Math.random() * GRID_COUNT),
+                    y: Math.floor(Math.random() * GRID_COUNT)
+                };
+            }
+        } else {
+            food2 = {
+                x: Math.floor(Math.random() * GRID_COUNT),
+                y: Math.floor(Math.random() * GRID_COUNT)
+            };
+            while (snake2.some(part => part.x === food2.x && part.y === food2.y)) {
+                food2 = {
+                    x: Math.floor(Math.random() * GRID_COUNT),
+                    y: Math.floor(Math.random() * GRID_COUNT)
+                };
+            }
+        }
+    }
+
+    function checkMatchEnd() {
+        if (!isAlive1 && !isAlive2) {
+            endMatch("DRAW");
+        } else if (!isAlive1) {
+            endMatch("PLAYER 2");
+        } else if (!isAlive2) {
+            endMatch("PLAYER 1");
+        }
+    }
+
+    function endMatch(winner) {
+        clearInterval(gameLoop);
+        clearInterval(matchTimer);
+        clearInterval(player1Timer);
+        clearInterval(player2Timer);
+        
+        gameRunning = false;
+        matchStatus = "finished";
+        
+        // Show winner
+        if (winner === "PLAYER 1") {
+            player1Status.style.display = 'block';
+            player1Status.innerHTML = '<div class="status-text" style="color: var(--success)">VICTORY!</div><div class="status-subtext">You win the match!</div>';
+            
+            player2Status.style.display = 'block';
+            player2Status.innerHTML = '<div class="status-text" style="color: var(--danger)">DEFEAT</div><div class="status-subtext">Better luck next time!</div>';
+            
+            // Update odds based on winner
+            updateOdds(1);
+        } else if (winner === "PLAYER 2") {
+            player1Status.style.display = 'block';
+            player1Status.innerHTML = '<div class="status-text" style="color: var(--danger)">DEFEAT</div><div class="status-subtext">Better luck next time!</div>';
+            
+            player2Status.style.display = 'block';
+            player2Status.innerHTML = '<div class="status-text" style="color: var(--success)">VICTORY!</div><div class="status-subtext">Opponent wins!</div>';
+            
+            // Update odds based on winner
+            updateOdds(2);
+        } else {
+            player1Status.style.display = 'block';
+            player1Status.innerHTML = '<div class="status-text" style="color: var(--warning)">DRAW</div><div class="status-subtext">No winner this round!</div>';
+            
+            player2Status.style.display = 'block';
+            player2Status.innerHTML = '<div class="status-text" style="color: var(--warning)">DRAW</div><div class="status-subtext">No winner this round!</div>';
+        }
+        
+        // Disable betting
+        placeBetBtn.disabled = true;
+        placeBetBtn.textContent = "Match Ended";
+        
+        // Show match result in overlay after 3 seconds
+        setTimeout(() => {
+            showMatchResult(winner);
+        }, 3000);
+    }
+
+    function endMatchByTime() {
+        clearInterval(gameLoop);
+        clearInterval(matchTimer);
+        clearInterval(player1Timer);
+        clearInterval(player2Timer);
+        
+        gameRunning = false;
+        matchStatus = "finished";
+        
+        // Determine winner by score
+        let winner;
+        if (score1 > score2) {
+            winner = "PLAYER 1";
+        } else if (score2 > score1) {
+            winner = "PLAYER 2";
+        } else {
+            // Tie breaker by survival time
+            if (player1TimeAlive > player2TimeAlive) {
+                winner = "PLAYER 1";
+            } else if (player2TimeAlive > player1TimeAlive) {
+                winner = "PLAYER 2";
+            } else {
+                winner = "DRAW";
+            }
+        }
+        
+        endMatch(winner);
+    }
+
+    function showMatchResult(winner) {
+        overlay.style.display = 'flex';
+        const overlayContent = document.querySelector('.overlay-content');
+        
+        let resultHTML = `
+            <h1 class="overlay-title">MATCH COMPLETE</h1>
+            <div style="margin: 2rem 0; font-size: 1.5rem; font-weight: 700;">
+        `;
+        
+        if (winner === "PLAYER 1") {
+            resultHTML += `<div style="color: var(--success)">You Win!</div>`;
+        } else if (winner === "PLAYER 2") {
+            resultHTML += `<div style="color: var(--danger)">You Lose!</div>`;
+        } else {
+            resultHTML += `<div style="color: var(--warning)">It's a Draw!</div>`;
+        }
+        
+        resultHTML += `
+            </div>
+            <div style="display: flex; justify-content: space-around; margin-bottom: 2rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Your Score</div>
+                    <div style="font-size: 2.5rem; font-weight: 700; color: var(--player1)">${score1}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">Opponent Score</div>
+                    <div style="font-size: 2.5rem; font-weight: 700; color: var(--player2)">${score2}</div>
+                </div>
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning)">Total Pot: $${totalPot.toLocaleString()}</div>
+                <div style="font-size: 0.9rem; color: var(--text-dim); margin-top: 0.5rem;">Distributed to winners</div>
+            </div>
+            <div class="overlay-buttons">
+                <button class="action-button" id="rematch-btn">
+                    <i class="fas fa-redo"></i> Rematch
+                </button>
+                <button class="action-button secondary" id="new-match-btn">
+                    <i class="fas fa-plus"></i> New Match
+                </button>
+            </div>
+        `;
+        
+        overlayContent.innerHTML = resultHTML;
+        
+        // Add event listeners to new buttons
+        document.getElementById('rematch-btn').addEventListener('click', () => {
+            overlay.style.display = 'none';
+            startMatchCountdown();
+        });
+        
+        document.getElementById('new-match-btn').addEventListener('click', () => {
+            overlay.style.display = 'none';
+            resetMatch();
+        });
+    }
+
+    function resetMatch() {
+        // Reset game state
+        snake1 = [{x: 8, y: 10}, {x: 8, y: 11}, {x: 8, y: 12}];
+        snake2 = [{x: 12, y: 10}, {x: 12, y: 11}, {x: 12, y: 12}];
+        direction1 = {x: 0, y: -1};
+        direction2 = {x: 0, y: -1};
+        nextDirection1 = {x: 0, y: -1};
+        nextDirection2 = {x: 0, y: -1};
+        score1 = 0;
+        score2 = 0;
+        isAlive1 = true;
+        isAlive2 = true;
+        player1TimeAlive = 0;
+        player2TimeAlive = 0;
+        
+        spawnFood(1);
+        spawnFood(2);
+        
+        // Reset UI
+        player1Status.style.display = 'block';
+        player1Status.innerHTML = '<div class="status-text">Waiting for opponent...</div><div class="status-subtext">Game starts when both players are ready</div>';
+        
+        player2Status.style.display = 'block';
+        player2Status.innerHTML = '<div class="status-text">Waiting for player...</div><div class="status-subtext">Opponent will appear here</div>';
+        
+        player1Container.classList.remove('active');
+        player2Container.classList.remove('active');
+        
+        // Reset betting
+        placeBetBtn.disabled = true;
+        placeBetBtn.textContent = "Place Bet on Player 1";
+        
+        // Reset match info
+        timeRemaining = MATCH_DURATION;
+        updateTimeDisplay();
+        
+        updateUI();
+        draw();
+        
+        // Reset find match button
+        findMatchBtn.innerHTML = '<i class="fas fa-search"></i> Find Opponent';
+        findMatchBtn.disabled = false;
+    }
+
+    function updateUI() {
+        score1El.textContent = score1.toString().padStart(3, '0');
+        score2El.textContent = score2.toString().padStart(3, '0');
+        length1El.textContent = snake1.length;
+        length2El.textContent = snake2.length;
+    }
+
+    function updatePlayerTimeDisplay() {
+        const minutes1 = Math.floor(player1TimeAlive / 60).toString().padStart(2, '0');
+        const seconds1 = (player1TimeAlive % 60).toString().padStart(2, '0');
+        time1El.textContent = `${minutes1}:${seconds1}`;
+        
+        const minutes2 = Math.floor(player2TimeAlive / 60).toString().padStart(2, '0');
+        const seconds2 = (player2TimeAlive % 60).toString().padStart(2, '0');
+        time2El.textContent = `${minutes2}:${seconds2}`;
+    }
+
+    function updateTimeDisplay() {
+        const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+        const seconds = (timeRemaining % 60).toString().padStart(2, '0');
+        timeRemainingEl.textContent = `${minutes}:${seconds}`;
+    }
+
+    function draw() {
+        // Draw player 1 board
+        drawBoard(ctx1, snake1, food1, '#00d8a7', '#00b88c');
+        
+        // Draw player 2 board
+        drawBoard(ctx2, snake2, food2, '#6c63ff', '#5a52d4');
+    }
+
+    function drawBoard(ctx, snake, food, headColor, bodyColor) {
+        // Clear canvas
+        ctx.fillStyle = '#151f3a';
+        ctx.fillRect(0, 0, 400, 400);
+
+        // Draw grid
+        ctx.strokeStyle = '#253153';
+        ctx.lineWidth = 1;
+        for(let i = 0; i <= 400; i += CELL_SIZE) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, 400);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, i);
+            ctx.lineTo(400, i);
+            ctx.stroke();
+        }
+
+        // Draw food
+        ctx.fillStyle = '#ff6b9d';
+        ctx.beginPath();
+        ctx.arc(
+            food.x * CELL_SIZE + CELL_SIZE/2, 
+            food.y * CELL_SIZE + CELL_SIZE/2, 
+            CELL_SIZE/2.5, 0, Math.PI * 2
+        );
+        ctx.fill();
+
+        // Draw snake
+        snake.forEach((part, index) => {
+            ctx.fillStyle = index === 0 ? headColor : bodyColor;
+            ctx.fillRect(
+                part.x * CELL_SIZE + 1, 
+                part.y * CELL_SIZE + 1, 
+                CELL_SIZE - 2, 
+                CELL_SIZE - 2
+            );
+            
+            // Draw snake eyes on head
+            if (index === 0) {
+                ctx.fillStyle = '#ffffff';
+                const eyeSize = 3;
+                const eyeOffset = 5;
+                ctx.beginPath();
+                ctx.arc(
+                    part.x * CELL_SIZE + eyeOffset,
+                    part.y * CELL_SIZE + eyeOffset,
+                    eyeSize, 0, Math.PI * 2
+                );
+                ctx.arc(
+                    part.x * CELL_SIZE + CELL_SIZE - eyeOffset,
+                    part.y * CELL_SIZE + eyeOffset,
+                    eyeSize, 0, Math.PI * 2
+                );
+                ctx.fill();
+            }
+        });
+    }
+
+    // Betting functions
+    function selectPlayer(player) {
+        selectedPlayer = player;
+        
+        if (player === 1) {
+            oddsPlayer1.classList.add('selected');
+            oddsPlayer2.classList.remove('selected');
+            placeBetBtn.textContent = "Place Bet on Player 1";
+        } else {
+            oddsPlayer1.classList.remove('selected');
+            oddsPlayer2.classList.add('selected');
+            placeBetBtn.textContent = "Place Bet on Player 2";
+        }
+        
+        updateBetButton();
+    }
+
+    function updateBetButton() {
+        betAmount = parseInt(betAmountInput.value) || 0;
+        const balance = 2540; // User's current balance
+        
+        if (betAmount <= 0 || betAmount > balance) {
+            placeBetBtn.disabled = true;
+        } else if (matchStatus !== "active") {
+            placeBetBtn.disabled = true;
+        } else {
+            placeBetBtn.disabled = false;
+        }
+    }
+
+    function placeBet() {
+        betAmount = parseInt(betAmountInput.value) || 0;
+        
+        // Add bet to live bets
+        const newBet = {
+            user: "You",
+            amount: betAmount,
+            player: selectedPlayer
+        };
+        
+        liveBets.unshift(newBet);
+        updateLiveBets();
+        
+        // Update total pot
+        totalPot += betAmount;
+        totalPotEl.textContent = `$${totalPot.toLocaleString()}`;
+        
+        // Show confirmation
+        const playerName = selectedPlayer === 1 ? "Player 1" : "Player 2";
+        alert(`Bet placed! $${betAmount} on ${playerName}`);
+        
+        // Reset bet amount
+        betAmountInput.value = "100";
+        updateBetButton();
+    }
+
+    function updateLiveBets() {
+        liveBetsList.innerHTML = '';
+        liveBetsCount.textContent = `${liveBets.length} bets`;
+        
+        // Show only first 8 bets
+        const displayBets = liveBets.slice(0, 8);
+        
+        displayBets.forEach(bet => {
+            const betItem = document.createElement('div');
+            betItem.className = `bet-item player${bet.player}`;
+            
+            betItem.innerHTML = `
+                <div class="bet-user">
+                    <div class="bet-user-avatar">${bet.user.charAt(0)}</div>
+                    <div class="bet-details">
+                        <div class="bet-username">${bet.user}</div>
+                        <div class="bet-on">on Player ${bet.player}</div>
+                    </div>
+                </div>
+                <div class="bet-amount">$${bet.amount.toLocaleString()}</div>
+            `;
+            
+            liveBetsList.appendChild(betItem);
+        });
+    }
+
+    function updateOdds(winner) {
+        // Simulate odds update based on game progress
+        if (winner === 1) {
+            // Player 1 is winning, adjust odds
+            const player1Odds = (1.5 + Math.random() * 0.5).toFixed(2);
+            const player2Odds = (2.0 + Math.random() * 0.5).toFixed(2);
+            
+            document.querySelector('.player1 .odds-value').textContent = player1Odds;
+            document.querySelector('.player2 .odds-value').textContent = player2Odds;
+            
+            const player1Prob = Math.floor(100 / parseFloat(player1Odds));
+            const player2Prob = Math.floor(100 / parseFloat(player2Odds));
+            
+            document.querySelector('.player1 .odds-label').textContent = `Win Probability: ${player1Prob}%`;
+            document.querySelector('.player2 .odds-label').textContent = `Win Probability: ${player2Prob}%`;
+        }
+    }
+
+    function generateMatchList() {
+        const matches = [
+            {id: "#A3F9B1", player1: "SnakeKing", player2: "VenomVIP", pot: 850, active: true},
+            {id: "#B2C8D7", player1: "PythonPro", player2: "CobraBet", pot: 1200, active: true},
+            {id: "#C9D3E1", player1: "ScaleMaster", player2: "SlitherGod", pot: 560, active: false},
+            {id: "#D4E2F1", player1: "ViperVIP", player2: "RattleBet", pot: 2100, active: true},
+        ];
+        
+        matchListEl.innerHTML = '';
+        
+        matches.forEach(match => {
+            const matchItem = document.createElement('div');
+            matchItem.className = `match-item ${match.active ? 'active' : ''}`;
+            
+            matchItem.innerHTML = `
+                <div class="match-players">
+                    <div class="player-tag player1">${match.player1}</div>
+                    <div class="vs">VS</div>
+                    <div class="player-tag player2">${match.player2}</div>
+                </div>
+                <div class="match-pot">
+                    <span class="pot-label">Total Pot</span>
+                    <span class="pot-amount">$${match.pot.toLocaleString()}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim)">
+                    <span>${match.id}</span>
+                    <span>${match.active ? 'Live Now' : 'Finished'}</span>
+                </div>
+            `;
+            
+            matchListEl.appendChild(matchItem);
+        });
+    }
+
+    function updatePlayersCount() {
+        // Simulate changing player count
+        const baseCount = 247;
+        const randomChange = Math.floor(Math.random() * 20) - 10;
+        playersCountEl.textContent = baseCount + randomChange;
+        
+        // Update every 30 seconds
+        setTimeout(updatePlayersCount, 30000);
+    }
+
+    function createPrivateMatch() {
+        alert("Private match creation would open a modal to set match parameters and generate a shareable link.");
+    }
+
+    function leaveMatch() {
+        if (matchStatus === "active") {
+            if (confirm("Are you sure you want to leave the match? This will count as a forfeit.")) {
+                isAlive1 = false;
+                checkMatchEnd();
+            }
+        } else {
+            resetMatch();
+        }
+    }
+
+    // Keyboard controls
+    window.addEventListener('keydown', e => {
+        const key = e.key.toLowerCase();
+        
+        // Player 1 controls (WASD or Arrow keys)
+        if (gameRunning && isAlive1) {
+            if ((key === 'w' || key === 'arrowup') && direction1.y === 0) {
+                nextDirection1 = {x: 0, y: -1};
+            }
+            if ((key === 's' || key === 'arrowdown') && direction1.y === 0) {
+                nextDirection1 = {x: 0, y: 1};
+            }
+            if ((key === 'a' || key === 'arrowleft') && direction1.x === 0) {
+                nextDirection1 = {x: -1, y: 0};
+            }
+            if ((key === 'd' || key === 'arrowright') && direction1.x === 0) {
+                nextDirection1 = {x: 1, y: 0};
+            }
+            
+            // Pause with space
+            if (key === ' ' && gameRunning) {
+                if (matchStatus === "active") {
+                    gameRunning = false;
+                    clearInterval(gameLoop);
+                    player1Status.style.display = 'block';
+                    player1Status.innerHTML = '<div class="status-text">PAUSED</div><div class="status-subtext">Press SPACE to resume</div>';
+                } else if (matchStatus === "paused") {
+                    gameRunning = true;
+                    player1Status.style.display = 'none';
+                    gameLoop = setInterval(updateGame, GAME_SPEED);
+                }
+            }
+            
+            // Forfeit with ESC
+            if (key === 'escape') {
+                if (confirm("Forfeit the match?")) {
+                    isAlive1 = false;
+                    checkMatchEnd();
+                }
+            }
+        }
+    });
+
+    // Initialize the platform when page loads
+    window.addEventListener('DOMContentLoaded', initPlatform);
+</script>
+</body>
+</html>
